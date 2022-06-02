@@ -1,0 +1,9 @@
+gym==0.23.1
+gym-legacy-toytext==0.0.1
+gym-notices==0.0.6
+keras==2.9.0
+Keras-Preprocessing==1.1.2
+numpy==1.22.2
+tf-agents==0.12.1
+vizdoom==1.1.13
+
