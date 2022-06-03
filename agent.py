@@ -17,8 +17,8 @@ from constants import *
 from utils import *
 
 # Configuration file path
-# config_file_path = os.path.join(vzd.scenarios_path, "deadly_corridor.cfg")
-config_file_path = os.path.join(vzd.scenarios_path, "simpler_basic.cfg")
+config_file_path = os.path.join(vzd.scenarios_path, "deadly_corridor.cfg")
+# config_file_path = os.path.join(vzd.scenarios_path, "simpler_basic.cfg")
 # config_file_path = os.path.join(vzd.scenarios_path, "rocket_basic.cfg")
 # config_file_path = os.path.join(vzd.scenarios_path, "basic.cfg")
 
