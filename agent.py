@@ -17,12 +17,13 @@ from constants import *
 from utils import *
 
 # Configuration file path
-config_file_path = os.path.join(vzd.scenarios_path, "deadly_corridor.cfg")
-# config_file_path = os.path.join(vzd.scenarios_path, "simpler_basic.cfg")
+# config_file_path = os.path.join(vzd.scenarios_path, "deadly_corridor.cfg")
+config_file_path = os.path.join(vzd.scenarios_path, "simpler_basic.cfg")
 # config_file_path = os.path.join(vzd.scenarios_path, "rocket_basic.cfg")
 # config_file_path = os.path.join(vzd.scenarios_path, "basic.cfg")
 
 DEVICE = torch.device('cpu')
+global_train_scores = []
 
 # Roda todas as épocas de treinamento
 def run(game, agent, actions, num_epochs, frame_repeat, steps_per_epoch=2000):
@@ -76,6 +77,7 @@ def run(game, agent, actions, num_epochs, frame_repeat, steps_per_epoch=2000):
 
         agent.update_target_net()
         train_scores = np.array(train_scores)
+        global_train_scores.append(train_scores.mean())
 
         print("Resultados: media: %.1f +/- %.1f," % (train_scores.mean(), train_scores.std()),
               "min: %.1f," % train_scores.min(), "max: %.1f," % train_scores.max())
@@ -83,17 +85,18 @@ def run(game, agent, actions, num_epochs, frame_repeat, steps_per_epoch=2000):
         test(game, agent, actions)
         if save_model:
             torch.save(agent.q_net, model_savefile)
-            import matplotlib.pyplot as plt
-            plt.plot(train_scores)
-            plt.xlabel('Episodes')
-            plt.ylabel('Train scores')
-            plt.title('Train scores vs Episodes')
-            plt.savefig('results.jpg')     
-            plt.close()
 
         print("Tempo total = %.2f minutos" % ((time() - start_time) / 60.0))
 
     game.close()
+    if save_model:
+        import matplotlib.pyplot as plt
+        plt.plot(global_train_scores)
+        plt.xlabel('Episodes')
+        plt.ylabel('Train scores')
+        plt.title('Train scores vs Episodes')
+        plt.savefig('results.jpg')     
+        plt.close()
     return agent, game
 
 # Usando uma rede neural para a estratégia de Double Deep Q-Learning
