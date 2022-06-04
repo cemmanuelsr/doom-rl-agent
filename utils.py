@@ -20,16 +20,16 @@ def generate_game(config_file_path):
     game.load_config(config_file_path)
     game.set_window_visible(visible_during_train)
     game.set_mode(vzd.Mode.PLAYER)
-#    if show_labels:
-#        game.set_screen_format(vzd.ScreenFormat.BGR24)
-#        game.set_labels_buffer_enabled(True)
-#        game.clear_available_game_variables()
-#        game.add_available_game_variable(vzd.GameVariable.POSITION_X)
-#        game.add_available_game_variable(vzd.GameVariable.POSITION_Y)
-#        game.add_available_game_variable(vzd.GameVariable.POSITION_Z)
-#    else:
-#        game.set_screen_format(vzd.ScreenFormat.GRAY8)
-    game.set_screen_format(vzd.ScreenFormat.GRAY8)
+    if show_labels:
+        game.set_screen_format(vzd.ScreenFormat.BGR24)
+        game.set_labels_buffer_enabled(True)
+        game.clear_available_game_variables()
+        game.add_available_game_variable(vzd.GameVariable.POSITION_X)
+        game.add_available_game_variable(vzd.GameVariable.POSITION_Y)
+        game.add_available_game_variable(vzd.GameVariable.POSITION_Z)
+    else:
+        game.set_screen_format(vzd.ScreenFormat.GRAY8)
+#    game.set_screen_format(vzd.ScreenFormat.GRAY8)
     game.set_screen_resolution(vzd.ScreenResolution.RES_640X480)
     game.init()
     print("Doom initialized.")
@@ -40,10 +40,12 @@ def generate_game(config_file_path):
 def test(game, agent, actions):
     print("\nTesting...")
     test_scores = []
-    for test_episode in trange(test_episodes_per_epoch, leave=False):
+    for _ in trange(test_episodes_per_epoch, leave=False):
         game.new_episode()
         while not game.is_episode_finished():
             state = preprocess(game.get_state().screen_buffer)
+            if show_labels:
+                state = np.reshape(state, (3, 30, 45))
             best_action_index = agent.get_action(state)
 
             game.make_action(actions[best_action_index], frame_repeat)

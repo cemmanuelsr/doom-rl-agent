@@ -17,8 +17,8 @@ from constants import *
 from utils import *
 
 # Configuration file path
-config_file_path = os.path.join(vzd.scenarios_path, "deadly_corridor.cfg")
-# config_file_path = os.path.join(vzd.scenarios_path, "simpler_basic.cfg")
+# config_file_path = os.path.join(vzd.scenarios_path, "deadly_corridor.cfg")
+config_file_path = os.path.join(vzd.scenarios_path, "simpler_basic.cfg")
 # config_file_path = os.path.join(vzd.scenarios_path, "rocket_basic.cfg")
 # config_file_path = os.path.join(vzd.scenarios_path, "basic.cfg")
 
@@ -37,32 +37,39 @@ def run(game, agent, actions, num_epochs, frame_repeat, steps_per_epoch=2000):
         
         for _ in trange(steps_per_epoch, leave=False):
 
-#            if show_labels and visible_during_train:
-#                _state = game.get_state()
-#                if _state:
-#                    labels = _state.labels_buffer
-#
-#                    if labels is not None:
-#                        cv2.imshow('ViZDoom Labels Buffer', color_labels(labels))
-#
-#                    screen = _state.screen_buffer
-#                    for l in _state.labels:
-#                        if l.object_name in ["Medkit", "GreenArmor"]:
-#                            draw_box(screen, l.x, l.y, l.width, l.height, doom_blue_color)
-#                        else:
-#                            draw_box(screen, l.x, l.y, l.width, l.height, doom_red_color)
-#                    cv2.imshow('ViZDoom Screen Buffer', screen)
-#                    cv2.waitKey(28)
+            if show_labels and visible_during_train:
+                _state = game.get_state()
+                if _state:
+                    labels = _state.labels_buffer
+
+                    if labels is not None:
+                        cv2.imshow('ViZDoom Labels Buffer', color_labels(labels))
+
+                    screen = _state.screen_buffer
+                    for l in _state.labels:
+                        if l.object_name in ["Medkit", "GreenArmor"]:
+                            draw_box(screen, l.x, l.y, l.width, l.height, doom_blue_color)
+                        else:
+                            draw_box(screen, l.x, l.y, l.width, l.height, doom_red_color)
+                    cv2.imshow('ViZDoom Screen Buffer', screen)
+                    cv2.waitKey(28)
 
             state = preprocess(game.get_state().screen_buffer)
+            if show_labels:
+                state = np.reshape(state, (3, 30, 45))
             action = agent.get_action(state)
             reward = game.make_action(actions[action], frame_repeat)
             done = game.is_episode_finished()
                         
             if not done:
                 next_state = preprocess(game.get_state().screen_buffer)
+                if show_labels:
+                    next_state = np.reshape(next_state, (3, 30, 45))
             else:
-                next_state = np.zeros((1, 30, 45)).astype(np.float32)
+                if not show_labels:
+                    next_state = np.zeros((1, 30, 45)).astype(np.float32)
+                else:
+                    next_state = np.zeros((3, 30, 45)).astype(np.float32)
 
             agent.append_memory(state, action, reward, next_state, done)
 
@@ -105,7 +112,7 @@ class DoubleQNet(nn.Module):
     def __init__(self, available_actions_count):
         super(DoubleQNet, self).__init__()
         self.conv1 = nn.Sequential(
-            nn.Conv2d(1, 8, kernel_size=3, stride=2, bias=False),
+            nn.Conv2d(3 if show_labels else 1, 8, kernel_size=3, stride=2, bias=False),
             nn.BatchNorm2d(8),
             nn.ReLU()
         )
@@ -263,6 +270,8 @@ if __name__ == '__main__':
         game.new_episode()
         while not game.is_episode_finished():
             state = preprocess(game.get_state().screen_buffer)
+            if show_labels:
+                state = np.reshape(state, (3, 30, 45))
             best_action_index = agent.get_action(state)
 
             game.set_action(actions[best_action_index])
