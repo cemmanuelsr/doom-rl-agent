@@ -91,7 +91,7 @@ def run(game, agent, actions, num_epochs, frame_repeat, steps_per_epoch=2000):
 
         test(game, agent, actions)
         if save_model:
-            torch.save(agent.q_net, model_savefile)
+            torch.save(agent.q_net, f'./agents/{model_savefile}')
 
         print("Tempo total = %.2f minutos" % ((time() - start_time) / 60.0))
 
@@ -102,7 +102,7 @@ def run(game, agent, actions, num_epochs, frame_repeat, steps_per_epoch=2000):
         plt.xlabel('Episodes')
         plt.ylabel('Train scores')
         plt.title('Train scores vs Episodes')
-        plt.savefig('results.jpg')     
+        plt.savefig('./results/results.jpg')     
         plt.close()
     return agent, game
 
@@ -177,9 +177,9 @@ class DQNAgent:
         self.criterion = nn.MSELoss()
 
         if load_model:
-            print("Loading model from: ", model_savefile)
-            self.q_net = torch.load(model_savefile)
-            self.target_net = torch.load(model_savefile)
+            print("Loading model from: ", f'./agents/{model_savefile}')
+            self.q_net = torch.load(f'./agents/{model_savefile}')
+            self.target_net = torch.load(f'./agents/{model_savefile}')
             self.epsilon = self.epsilon_min
 
         else:
